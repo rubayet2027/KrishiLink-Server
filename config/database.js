@@ -10,12 +10,6 @@ if (!uri) {
   // Don't exit process in serverless environment - throw error instead
 }
 
-/**
- * MongoDB Client Configuration
- * 
- * Uses connection pooling for efficient database operations.
- * Configured for MongoDB Atlas.
- */
 const client = uri ? new MongoClient(uri, {
   // Connection pool settings
   maxPoolSize: 10,
@@ -41,7 +35,7 @@ export const connectDB = async () => {
     }
     
     await client.connect();
-    await client.db('admin').command({ ping: 1 });
+    // await client.db('admin').command({ ping: 1 }); // Commented to avoid gateway timeout on Vercel
     
     db = client.db('krishilink');
     console.log('✅ Connected to MongoDB - KrishiLink Database');
@@ -107,7 +101,7 @@ export const getCollection = (collectionName) => {
  */
 export const closeDB = async () => {
   try {
-    await client.close();
+    // await client.close(); // Commented to avoid gateway timeout on Vercel
     db = null;
     console.log('✅ MongoDB connection closed');
   } catch (error) {

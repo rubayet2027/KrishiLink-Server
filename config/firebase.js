@@ -6,10 +6,24 @@ dotenv.config();
 /**
  * Initialize Firebase Admin SDK
  * 
- * Uses environment variables for both local and production.
+ * Supports two methods:
+ * 1. FB_SERVICE_KEY - Base64 encoded service account JSON (recommended for Vercel)
+ * 2. Individual FIREBASE_* env vars (fallback)
  */
 
 const getFirebaseConfig = () => {
+  // Method 1: Base64 encoded service key (preferred for Vercel)
+  if (process.env.FB_SERVICE_KEY) {
+    try {
+      const decoded = Buffer.from(process.env.FB_SERVICE_KEY, "base64").toString("utf8");
+      const serviceAccount = JSON.parse(decoded);
+      return serviceAccount;
+    } catch (error) {
+      console.error('❌ Error decoding FB_SERVICE_KEY:', error.message);
+    }
+  }
+
+  // Method 2: Individual environment variables (fallback)
   if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY) {
     console.error('❌ Firebase credentials not found in environment variables');
     return null;
@@ -38,7 +52,6 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(firebaseConfig)
     });
-    console.log('✅ Firebase Admin initialized successfully');
   } else {
     console.error('❌ Firebase Admin could not be initialized - missing credentials');
   }

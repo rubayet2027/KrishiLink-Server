@@ -113,7 +113,6 @@ const ensureUserExists = async (firebaseUser) => {
       // Create new user document
       const newUser = createUserDocument(firebaseUser);
       await usersCollection.insertOne(newUser);
-      console.log(`✅ New user created: ${firebaseUser.email}`);
     } else {
       // Update last login time
       await usersCollection.updateOne(
