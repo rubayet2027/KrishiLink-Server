@@ -3,18 +3,7 @@ import { getCollection } from '../config/database.js';
 import { validateInterestData, interestStatus } from '../models/Crop.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 
-/**
- * Interest Controller
- * 
- * Handles all interest-related operations.
- * Interests are embedded within crop documents for atomic operations.
- */
 
-/**
- * @route   POST /api/interests/:cropId
- * @desc    Submit interest on a crop
- * @access  Private
- */
 export const submitInterest = asyncHandler(async (req, res) => {
   const { cropId } = req.params;
   const { user } = req;

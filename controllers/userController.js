@@ -2,17 +2,6 @@ import { getCollection } from '../config/database.js';
 import { validateUserData } from '../models/User.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 
-/**
- * User Controller
- * 
- * Handles user profile operations.
- */
-
-/**
- * @route   GET /api/users/profile
- * @desc    Get current user's profile
- * @access  Private
- */
 export const getProfile = asyncHandler(async (req, res) => {
   const { user } = req;
   
@@ -20,7 +9,7 @@ export const getProfile = asyncHandler(async (req, res) => {
   
   const userProfile = await usersCollection.findOne(
     { uid: user.uid },
-    { projection: { _id: 0 } } // Exclude MongoDB _id, use Firebase uid
+    { projection: { _id: 0 } } 
   );
   
   if (!userProfile) {
@@ -33,11 +22,6 @@ export const getProfile = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   PUT /api/users/profile
- * @desc    Update current user's profile
- * @access  Private
- */
 export const updateProfile = asyncHandler(async (req, res) => {
   const { user } = req;
   const updateData = req.body;
@@ -92,11 +76,7 @@ export const updateProfile = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   GET /api/users/:uid
- * @desc    Get a user's public profile
- * @access  Public
- */
+
 export const getPublicProfile = asyncHandler(async (req, res) => {
   const { uid } = req.params;
   
@@ -138,11 +118,7 @@ export const getPublicProfile = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   GET /api/users/stats
- * @desc    Get current user's statistics
- * @access  Private
- */
+
 export const getUserStats = asyncHandler(async (req, res) => {
   const { user } = req;
   
@@ -232,11 +208,7 @@ export const getUserStats = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   DELETE /api/users/profile
- * @desc    Delete user account and all associated data
- * @access  Private
- */
+
 export const deleteAccount = asyncHandler(async (req, res) => {
   const { user } = req;
   

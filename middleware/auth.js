@@ -2,16 +2,7 @@ import admin from '../config/firebase.js';
 import { getCollection } from '../config/database.js';
 import { createUserDocument } from '../models/User.js';
 
-/**
- * Firebase Token Verification Middleware
- * 
- * Verifies the Firebase ID token from the Authorization header.
- * Creates a new user document if the user doesn't exist in MongoDB.
- * 
- * Usage: Add this middleware to protected routes
- * 
- * Header format: Authorization: Bearer <firebase_id_token>
- */
+
 export const verifyToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -77,12 +68,6 @@ export const verifyToken = async (req, res, next) => {
   }
 };
 
-/**
- * Optional Token Verification Middleware
- * 
- * Similar to verifyToken, but doesn't fail if no token is provided.
- * Useful for routes that have different behavior for authenticated vs anonymous users.
- */
 export const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -117,10 +102,7 @@ export const optionalAuth = async (req, res, next) => {
   }
 };
 
-/**
- * Ensure user exists in MongoDB
- * Creates a new user document if they don't exist
- */
+
 const ensureUserExists = async (firebaseUser) => {
   try {
     const usersCollection = getCollection('users');
@@ -148,6 +130,5 @@ const ensureUserExists = async (firebaseUser) => {
     }
   } catch (error) {
     console.error('Error ensuring user exists:', error.message);
-    // Don't throw - allow the request to continue
   }
 };

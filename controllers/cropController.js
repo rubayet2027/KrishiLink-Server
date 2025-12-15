@@ -3,17 +3,6 @@ import { getCollection } from '../config/database.js';
 import { validateCropData, cropStatus } from '../models/Crop.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 
-/**
- * Crop Controller
- * 
- * Handles all crop-related operations including CRUD and filtering.
- */
-
-/**
- * @route   GET /api/crops
- * @desc    Get all available crops with optional filtering
- * @access  Public
- */
 export const getAllCrops = asyncHandler(async (req, res) => {
   const cropsCollection = getCollection('crops');
   
@@ -90,11 +79,7 @@ export const getAllCrops = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   GET /api/crops/:id
- * @desc    Get single crop by ID with interests (for owner)
- * @access  Public (interests visible only to owner)
- */
+
 export const getCropById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   
@@ -128,11 +113,7 @@ export const getCropById = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   POST /api/crops
- * @desc    Create a new crop listing
- * @access  Private
- */
+
 export const createCrop = asyncHandler(async (req, res) => {
   const { user } = req;
   const cropData = req.body;
@@ -188,11 +169,7 @@ export const createCrop = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   PUT /api/crops/:id
- * @desc    Update a crop listing
- * @access  Private (Owner only)
- */
+
 export const updateCrop = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { user } = req;
@@ -258,11 +235,7 @@ export const updateCrop = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   DELETE /api/crops/:id
- * @desc    Delete a crop listing
- * @access  Private (Owner only)
- */
+
 export const deleteCrop = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { user } = req;

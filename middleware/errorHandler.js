@@ -1,13 +1,3 @@
-/**
- * Error Handler Middleware
- * 
- * Centralized error handling for the application.
- * Provides consistent error response format.
- */
-
-/**
- * Custom API Error class
- */
 export class ApiError extends Error {
   constructor(statusCode, message, code = 'ERROR') {
     super(message);
@@ -19,10 +9,6 @@ export class ApiError extends Error {
   }
 }
 
-/**
- * Not Found Handler
- * Catches requests to undefined routes
- */
 export const notFoundHandler = (req, res, next) => {
   res.status(404).json({
     success: false,
@@ -31,10 +17,6 @@ export const notFoundHandler = (req, res, next) => {
   });
 };
 
-/**
- * Global Error Handler
- * Catches all errors and returns consistent response
- */
 export const errorHandler = (err, req, res, next) => {
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal Server Error';
@@ -79,10 +61,6 @@ export const errorHandler = (err, req, res, next) => {
   });
 };
 
-/**
- * Async Handler Wrapper
- * Wraps async route handlers to catch errors
- */
 export const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
