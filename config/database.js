@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,14 +14,9 @@ if (!uri) {
  * MongoDB Client Configuration
  * 
  * Uses connection pooling for efficient database operations.
- * Configured for MongoDB Atlas with Server API v1.
+ * Configured for MongoDB Atlas.
  */
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
   // Connection pool settings
   maxPoolSize: 10,
   minPoolSize: 5,

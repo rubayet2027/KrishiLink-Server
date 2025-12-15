@@ -2,3 +2,8 @@ node_modules
 .env
 *.log
 .DS_Store
+# Firebase service account credentials
+*.json
+!package.json
+!package-lock.json
+!vercel.json
