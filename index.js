@@ -26,13 +26,20 @@ const corsOptions = {
     process.env.CLIENT_URL || 'http://localhost:5173',
     'http://localhost:5173',
     'http://localhost:5174',
+    'https://krishilink-56c13.web.app', // Firebase Hosting
+    'https://krishilink-56c13.firebaseapp.com', // Firebase alternate domain
     'https://krishilink.vercel.app', // Production client URL
-    /\.vercel\.app$/ // Allow all Vercel preview deployments
+    /\.vercel\.app$/, // Allow all Vercel preview deployments
+    /\.web\.app$/, // Allow all Firebase Hosting domains
+    /\.firebaseapp\.com$/ // Allow all Firebase alternate domains
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
 
 app.use(cors(corsOptions));
 
