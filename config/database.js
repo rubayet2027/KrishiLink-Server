@@ -7,7 +7,7 @@ const uri = process.env.MONGODB_URI;
 
 if (!uri) {
   console.error('❌ MONGODB_URI is not defined in environment variables');
-  process.exit(1);
+  // Don't exit process in serverless environment - throw error instead
 }
 
 /**
@@ -16,14 +16,14 @@ if (!uri) {
  * Uses connection pooling for efficient database operations.
  * Configured for MongoDB Atlas.
  */
-const client = new MongoClient(uri, {
+const client = uri ? new MongoClient(uri, {
   // Connection pool settings
   maxPoolSize: 10,
   minPoolSize: 5,
   maxIdleTimeMS: 60000,
   connectTimeoutMS: 10000,
   socketTimeoutMS: 45000,
-});
+}) : null;
 
 let db = null;
 
@@ -32,6 +32,10 @@ let db = null;
  */
 export const connectDB = async () => {
   try {
+    if (!client) {
+      throw new Error('MongoDB client not initialized - MONGODB_URI missing');
+    }
+    
     if (db) {
       return db;
     }
