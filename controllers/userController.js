@@ -1,8 +1,10 @@
-import { getCollection } from '../config/database.js';
+import { connectDB, getCollection } from '../config/database.js';
 import { validateUserData } from '../models/User.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 
 export const getProfile = asyncHandler(async (req, res) => {
+  await connectDB();
+  
   const { user } = req;
   
   const usersCollection = getCollection('users');
@@ -23,6 +25,8 @@ export const getProfile = asyncHandler(async (req, res) => {
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {
+  await connectDB();
+  
   const { user } = req;
   const updateData = req.body;
   
@@ -78,6 +82,8 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
 
 export const getPublicProfile = asyncHandler(async (req, res) => {
+  await connectDB();
+  
   const { uid } = req.params;
   
   const usersCollection = getCollection('users');
@@ -120,6 +126,8 @@ export const getPublicProfile = asyncHandler(async (req, res) => {
 
 
 export const getUserStats = asyncHandler(async (req, res) => {
+  await connectDB();
+  
   const { user } = req;
   
   const usersCollection = getCollection('users');
@@ -210,6 +218,8 @@ export const getUserStats = asyncHandler(async (req, res) => {
 
 
 export const deleteAccount = asyncHandler(async (req, res) => {
+  await connectDB();
+  
   const { user } = req;
   
   const usersCollection = getCollection('users');

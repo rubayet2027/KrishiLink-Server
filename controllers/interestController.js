@@ -1,10 +1,11 @@
 import { ObjectId } from 'mongodb';
-import { getCollection } from '../config/database.js';
+import { connectDB, getCollection } from '../config/database.js';
 import { validateInterestData, interestStatus } from '../models/Crop.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 
 
 export const submitInterest = asyncHandler(async (req, res) => {
+  await connectDB();
   const { cropId } = req.params;
   const { user } = req;
   const { requestedQuantity, message } = req.body;
@@ -72,6 +73,7 @@ export const submitInterest = asyncHandler(async (req, res) => {
 
 
 export const acceptInterest = asyncHandler(async (req, res) => {
+  await connectDB();
   const { cropId, interestId } = req.params;
   const { user } = req;
   
@@ -164,6 +166,7 @@ export const acceptInterest = asyncHandler(async (req, res) => {
 });
 
 export const rejectInterest = asyncHandler(async (req, res) => {
+  await connectDB();
   const { cropId, interestId } = req.params;
   const { user } = req;
   
@@ -229,6 +232,7 @@ export const rejectInterest = asyncHandler(async (req, res) => {
 });
 
 export const getMyInterests = asyncHandler(async (req, res) => {
+  await connectDB();
   const { user } = req;
   const { status, page = 1, limit = 10 } = req.query;
   
@@ -302,6 +306,7 @@ export const getMyInterests = asyncHandler(async (req, res) => {
 });
 
 export const cancelInterest = asyncHandler(async (req, res) => {
+  await connectDB();
   const { cropId, interestId } = req.params;
   const { user } = req;
   
@@ -354,6 +359,7 @@ export const cancelInterest = asyncHandler(async (req, res) => {
  * @access  Private (Owner only)
  */
 export const getCropInterests = asyncHandler(async (req, res) => {
+  await connectDB();
   const { cropId } = req.params;
   const { user } = req;
   const { status } = req.query;

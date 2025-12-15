@@ -1,9 +1,10 @@
 import { ObjectId } from 'mongodb';
-import { getCollection } from '../config/database.js';
+import { connectDB, getCollection } from '../config/database.js';
 import { validateCropData, cropStatus } from '../models/Crop.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 
 export const getAllCrops = asyncHandler(async (req, res) => {
+  await connectDB();
   const cropsCollection = getCollection('crops');
   
   const {
@@ -79,6 +80,7 @@ export const getAllCrops = asyncHandler(async (req, res) => {
 
 
 export const getCropById = asyncHandler(async (req, res) => {
+  await connectDB();
   const { id } = req.params;
   
   if (!ObjectId.isValid(id)) {
@@ -113,6 +115,7 @@ export const getCropById = asyncHandler(async (req, res) => {
 
 
 export const createCrop = asyncHandler(async (req, res) => {
+  await connectDB();
   const { user } = req;
   const cropData = req.body;
   
@@ -169,6 +172,7 @@ export const createCrop = asyncHandler(async (req, res) => {
 
 
 export const updateCrop = asyncHandler(async (req, res) => {
+  await connectDB();
   const { id } = req.params;
   const { user } = req;
   const updateData = req.body;
@@ -235,6 +239,7 @@ export const updateCrop = asyncHandler(async (req, res) => {
 
 
 export const deleteCrop = asyncHandler(async (req, res) => {
+  await connectDB();
   const { id } = req.params;
   const { user } = req;
   
@@ -276,6 +281,7 @@ export const deleteCrop = asyncHandler(async (req, res) => {
  * @access  Private
  */
 export const getMyPosts = asyncHandler(async (req, res) => {
+  await connectDB();
   const { user } = req;
   const { status, page = 1, limit = 10 } = req.query;
   
@@ -328,6 +334,7 @@ export const getMyPosts = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getCategories = asyncHandler(async (req, res) => {
+  await connectDB();
   const cropsCollection = getCollection('crops');
   
   const categories = await cropsCollection.aggregate([
