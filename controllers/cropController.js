@@ -6,7 +6,6 @@ import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
 export const getAllCrops = asyncHandler(async (req, res) => {
   const cropsCollection = getCollection('crops');
   
-  // Query parameters for filtering
   const {
     category,
     status = 'available',
@@ -20,7 +19,6 @@ export const getAllCrops = asyncHandler(async (req, res) => {
     limit = 12
   } = req.query;
   
-  // Build filter query
   const filter = {};
   
   if (status && cropStatus.includes(status)) {

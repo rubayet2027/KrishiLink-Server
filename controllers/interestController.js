@@ -15,24 +15,20 @@ export const submitInterest = asyncHandler(async (req, res) => {
   
   const cropsCollection = getCollection('crops');
   
-  // Find the crop
   const crop = await cropsCollection.findOne({ _id: new ObjectId(cropId) });
   
   if (!crop) {
     throw new ApiError(404, 'Crop not found', 'CROP_NOT_FOUND');
   }
   
-  // Check if crop is available
   if (crop.status !== 'available') {
     throw new ApiError(400, 'This crop is no longer available', 'CROP_NOT_AVAILABLE');
   }
   
-  // Prevent owner from submitting interest on their own crop
   if (crop.owner.uid === user.uid) {
     throw new ApiError(400, 'You cannot submit interest on your own crop', 'SELF_INTEREST_NOT_ALLOWED');
   }
   
-  // Check for duplicate pending interest
   const existingPendingInterest = crop.interests?.find(
     interest => interest.buyerUid === user.uid && interest.status === 'pending'
   );
@@ -41,13 +37,11 @@ export const submitInterest = asyncHandler(async (req, res) => {
     throw new ApiError(409, 'You already have a pending interest on this crop', 'DUPLICATE_INTEREST');
   }
   
-  // Validate interest data
   const validation = validateInterestData({ requestedQuantity }, crop.quantity);
   if (!validation.isValid) {
     throw new ApiError(400, validation.errors.join(', '), 'VALIDATION_ERROR');
   }
   
-  // Create new interest with auto-generated ObjectId
   const newInterest = {
     _id: new ObjectId(),
     buyerUid: user.uid,
@@ -61,7 +55,6 @@ export const submitInterest = asyncHandler(async (req, res) => {
     processedAt: null
   };
   
-  // Add interest to crop's interests array
   await cropsCollection.updateOne(
     { _id: new ObjectId(cropId) },
     { 
@@ -77,11 +70,7 @@ export const submitInterest = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   PATCH /api/interests/:cropId/:interestId/accept
- * @desc    Accept an interest (reduces quantity atomically)
- * @access  Private (Owner only)
- */
+
 export const acceptInterest = asyncHandler(async (req, res) => {
   const { cropId, interestId } = req.params;
   const { user } = req;
@@ -93,19 +82,15 @@ export const acceptInterest = asyncHandler(async (req, res) => {
   const cropsCollection = getCollection('crops');
   const usersCollection = getCollection('users');
   
-  // Find the crop
   const crop = await cropsCollection.findOne({ _id: new ObjectId(cropId) });
   
   if (!crop) {
     throw new ApiError(404, 'Crop not found', 'CROP_NOT_FOUND');
   }
-  
-  // Verify ownership
+
   if (crop.owner.uid !== user.uid) {
     throw new ApiError(403, 'Only the crop owner can accept interests', 'UNAUTHORIZED');
   }
-  
-  // Find the specific interest
   const interest = crop.interests?.find(
     i => i._id.toString() === interestId
   );
@@ -114,26 +99,24 @@ export const acceptInterest = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Interest not found', 'INTEREST_NOT_FOUND');
   }
   
-  // Check if interest is still pending
+
   if (interest.status !== 'pending') {
     throw new ApiError(400, `Interest has already been ${interest.status}`, 'INTEREST_ALREADY_PROCESSED');
   }
   
-  // Check if enough quantity is available
+
   if (interest.requestedQuantity > crop.quantity) {
     throw new ApiError(400, 'Not enough quantity available', 'INSUFFICIENT_QUANTITY');
   }
   
-  // Calculate new quantity
   const newQuantity = crop.quantity - interest.requestedQuantity;
   const newStatus = newQuantity === 0 ? 'sold_out' : 'available';
   
-  // Atomic update: accept interest and reduce quantity
   const result = await cropsCollection.findOneAndUpdate(
     { 
       _id: new ObjectId(cropId),
       'interests._id': new ObjectId(interestId),
-      'interests.status': 'pending' // Ensure still pending (race condition protection)
+      'interests.status': 'pending'
     },
     {
       $set: {
@@ -151,19 +134,17 @@ export const acceptInterest = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'Interest could not be processed. It may have already been processed.', 'UPDATE_FAILED');
   }
   
-  // Update buyer's stats
+
   await usersCollection.updateOne(
     { uid: interest.buyerUid },
     { $inc: { 'stats.totalPurchased': 1 } }
   );
   
-  // Update seller's stats
   await usersCollection.updateOne(
     { uid: user.uid },
     { $inc: { 'stats.totalSold': 1 } }
   );
   
-  // Find the updated interest
   const updatedInterest = result.interests.find(
     i => i._id.toString() === interestId
   );
@@ -182,11 +163,6 @@ export const acceptInterest = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   PATCH /api/interests/:cropId/:interestId/reject
- * @desc    Reject an interest
- * @access  Private (Owner only)
- */
 export const rejectInterest = asyncHandler(async (req, res) => {
   const { cropId, interestId } = req.params;
   const { user } = req;
@@ -197,19 +173,17 @@ export const rejectInterest = asyncHandler(async (req, res) => {
   
   const cropsCollection = getCollection('crops');
   
-  // Find the crop
   const crop = await cropsCollection.findOne({ _id: new ObjectId(cropId) });
   
   if (!crop) {
     throw new ApiError(404, 'Crop not found', 'CROP_NOT_FOUND');
   }
   
-  // Verify ownership
+
   if (crop.owner.uid !== user.uid) {
     throw new ApiError(403, 'Only the crop owner can reject interests', 'UNAUTHORIZED');
   }
   
-  // Find the specific interest
   const interest = crop.interests?.find(
     i => i._id.toString() === interestId
   );
@@ -218,12 +192,11 @@ export const rejectInterest = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Interest not found', 'INTEREST_NOT_FOUND');
   }
   
-  // Check if interest is still pending
+
   if (interest.status !== 'pending') {
     throw new ApiError(400, `Interest has already been ${interest.status}`, 'INTEREST_ALREADY_PROCESSED');
   }
   
-  // Update interest status to rejected
   const result = await cropsCollection.findOneAndUpdate(
     { 
       _id: new ObjectId(cropId),
@@ -255,39 +228,26 @@ export const rejectInterest = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   GET /api/interests/my-interests
- * @desc    Get all interests submitted by the current user
- * @access  Private
- */
 export const getMyInterests = asyncHandler(async (req, res) => {
   const { user } = req;
   const { status, page = 1, limit = 10 } = req.query;
   
   const cropsCollection = getCollection('crops');
   
-  // Build match conditions for the aggregation pipeline
   const matchConditions = {
     'interests.buyerUid': user.uid
   };
   
-  // Aggregation to find crops where user has submitted interests
-  // and extract only their interests with crop details
   const pipeline = [
-    // Match crops that have interests from this user
+
     { $match: matchConditions },
-    // Unwind interests array
     { $unwind: '$interests' },
-    // Filter to only this user's interests
     { $match: { 'interests.buyerUid': user.uid } },
-    // Filter by status if provided
     ...(status && interestStatus.includes(status) 
       ? [{ $match: { 'interests.status': status } }] 
       : []
     ),
-    // Sort by interest creation date
     { $sort: { 'interests.createdAt': -1 } },
-    // Project the shape we want
     {
       $project: {
         _id: '$interests._id',
@@ -307,12 +267,10 @@ export const getMyInterests = asyncHandler(async (req, res) => {
         processedAt: '$interests.processedAt'
       }
     },
-    // Pagination
     { $skip: (parseInt(page) - 1) * parseInt(limit) },
     { $limit: parseInt(limit) }
   ];
   
-  // Count pipeline (without pagination)
   const countPipeline = [
     { $match: matchConditions },
     { $unwind: '$interests' },
@@ -343,11 +301,6 @@ export const getMyInterests = asyncHandler(async (req, res) => {
   });
 });
 
-/**
- * @route   DELETE /api/interests/:cropId/:interestId
- * @desc    Cancel/withdraw a pending interest
- * @access  Private (Interest owner only)
- */
 export const cancelInterest = asyncHandler(async (req, res) => {
   const { cropId, interestId } = req.params;
   const { user } = req;
@@ -357,15 +310,13 @@ export const cancelInterest = asyncHandler(async (req, res) => {
   }
   
   const cropsCollection = getCollection('crops');
-  
-  // Find the crop
+
   const crop = await cropsCollection.findOne({ _id: new ObjectId(cropId) });
   
   if (!crop) {
     throw new ApiError(404, 'Crop not found', 'CROP_NOT_FOUND');
   }
   
-  // Find the specific interest
   const interest = crop.interests?.find(
     i => i._id.toString() === interestId
   );
@@ -374,17 +325,15 @@ export const cancelInterest = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Interest not found', 'INTEREST_NOT_FOUND');
   }
   
-  // Verify ownership of the interest
+
   if (interest.buyerUid !== user.uid) {
     throw new ApiError(403, 'You can only cancel your own interests', 'UNAUTHORIZED');
   }
   
-  // Can only cancel pending interests
   if (interest.status !== 'pending') {
     throw new ApiError(400, `Cannot cancel an interest that has been ${interest.status}`, 'CANNOT_CANCEL');
   }
   
-  // Remove the interest from the crop
   await cropsCollection.updateOne(
     { _id: new ObjectId(cropId) },
     { 

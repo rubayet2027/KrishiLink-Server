@@ -16,9 +16,7 @@ export const interestStatus = ['pending', 'accepted', 'rejected'];
 
 export const units = ['kg', 'gram', 'ton', 'piece', 'dozen', 'liter'];
 
-/**
- * Validation helper for crop data
- */
+
 export const validateCropData = (data) => {
   const errors = [];
 
@@ -52,9 +50,7 @@ export const validateCropData = (data) => {
   };
 };
 
-/**
- * Validation helper for interest data
- */
+
 export const validateInterestData = (data, availableQuantity) => {
   const errors = [];
 

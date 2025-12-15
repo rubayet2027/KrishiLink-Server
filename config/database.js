@@ -6,7 +6,7 @@ dotenv.config();
 const uri = process.env.MONGODB_URI;
 
 if (!uri) {
-  console.error('❌ MONGODB_URI is not defined in environment variables');
+  console.error('MONGODB_URI is not defined in environment variables');
   // Don't exit process in serverless environment - throw error instead
 }
 
@@ -45,7 +45,7 @@ export const connectDB = async () => {
     
     return db;
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
+    console.error('MongoDB connection error:', error.message);
     throw error;
   }
 };
@@ -69,7 +69,7 @@ const createIndexes = async (database) => {
     await usersCollection.createIndex({ uid: 1 }, { unique: true });
     await usersCollection.createIndex({ email: 1 }, { unique: true });
     
-    console.log('✅ Database indexes created');
+    console.log('Database indexes created');
   } catch (error) {
     // Indexes might already exist, which is fine
     if (error.code !== 85) {
@@ -103,9 +103,9 @@ export const closeDB = async () => {
   try {
     // await client.close(); // Commented to avoid gateway timeout on Vercel
     db = null;
-    console.log('✅ MongoDB connection closed');
+    console.log('MongoDB connection closed');
   } catch (error) {
-    console.error('❌ Error closing MongoDB connection:', error.message);
+    console.error('Error closing MongoDB connection:', error.message);
   }
 };
 
