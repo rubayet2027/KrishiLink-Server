@@ -1,3 +1,18 @@
+// Check if user has already submitted interest for a crop
+export const checkInterestSubmitted = asyncHandler(async (req, res) => {
+  await connectDB();
+  const { cropId, email } = req.params;
+  if (!ObjectId.isValid(cropId)) {
+    return res.status(400).json({ hasSubmitted: false, error: 'Invalid crop ID' });
+  }
+  const cropsCollection = getCollection('crops');
+  const crop = await cropsCollection.findOne({ _id: new ObjectId(cropId) });
+  if (!crop) {
+    return res.status(404).json({ hasSubmitted: false, error: 'Crop not found' });
+  }
+  const hasSubmitted = (crop.interests || []).some(i => i.buyerEmail === email && i.status === 'pending');
+  res.json({ hasSubmitted });
+});
 import { ObjectId } from 'mongodb';
 import { connectDB, getCollection } from '../config/database.js';
 import { validateInterestData, interestStatus } from '../models/Crop.js';

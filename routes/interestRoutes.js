@@ -17,6 +17,15 @@ const router = express.Router();
  * Base path: /api/interests
  */
 
+
+// Check if user has already submitted interest for a crop
+router.get('/check/:cropId/:email', verifyToken, (req, res, next) => {
+  // Controller logic will be added in interestController.js
+  import('../controllers/interestController.js').then(module => {
+    module.checkInterestSubmitted(req, res, next);
+  });
+});
+
 // Get current user's submitted interests
 router.get('/my-interests', verifyToken, getMyInterests);
 
