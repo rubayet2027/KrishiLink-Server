@@ -42,8 +42,9 @@ export const getAllCrops = asyncHandler(async (req, res) => {
   
   if (search) {
     filter.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } }
+      { name: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } },
+      { title: { $regex: search, $options: 'i' } } // for legacy compatibility
     ];
   }
   
@@ -119,47 +120,37 @@ export const createCrop = asyncHandler(async (req, res) => {
   const { user } = req;
   const cropData = req.body;
   
-  // Validate crop data
+  // Validate crop data before storing
   const validation = validateCropData(cropData);
   if (!validation.isValid) {
-    throw new ApiError(400, validation.errors.join(', '), 'VALIDATION_ERROR');
+    return res.status(400).json({
+      success: false,
+      message: validation.errors.join(', '),
+      errors: validation.errors
+    });
   }
-  
+
   const cropsCollection = getCollection('crops');
   const usersCollection = getCollection('users');
-  
-  // Create crop document
+
+  // Ensure interests is always an array
   const newCrop = {
-    title: cropData.title.trim(),
-    description: cropData.description.trim(),
-    category: cropData.category,
-    quantity: parseFloat(cropData.quantity),
-    unit: cropData.unit || 'kg',
-    pricePerUnit: parseFloat(cropData.pricePerUnit),
-    location: cropData.location.trim(),
-    harvestDate: cropData.harvestDate ? new Date(cropData.harvestDate) : null,
-    imageUrl: cropData.imageUrl || '',
-    isOrganic: Boolean(cropData.isOrganic),
-    owner: {
-      uid: user.uid,
-      email: user.email,
-      name: user.name,
-      photoURL: user.photoURL
-    },
-    interests: [],
-    status: 'available',
+    ...cropData,
+    interests: Array.isArray(cropData.interests) ? cropData.interests : [],
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
-  
+
   const result = await cropsCollection.insertOne(newCrop);
-  
+
   // Update user's total posts count
-  await usersCollection.updateOne(
-    { uid: user.uid },
-    { $inc: { 'stats.totalPosts': 1 } }
-  );
-  
+  if (cropData.owner && cropData.owner.uid) {
+    await usersCollection.updateOne(
+      { uid: cropData.owner.uid },
+      { $inc: { 'stats.totalPosts': 1 } }
+    );
+  }
+
   res.status(201).json({
     success: true,
     message: 'Crop listing created successfully',
@@ -194,12 +185,12 @@ export const updateCrop = asyncHandler(async (req, res) => {
     throw new ApiError(403, 'You are not authorized to update this crop', 'UNAUTHORIZED');
   }
   
-  // Build update object (only allow certain fields to be updated)
+  // Build update object (allow both legacy and new fields)
   const allowedUpdates = [
-    'title', 'description', 'category', 'quantity', 'unit',
-    'pricePerUnit', 'location', 'harvestDate', 'imageUrl', 'isOrganic', 'status'
+    'name', 'title', 'description', 'category', 'quantity', 'unit',
+    'pricePerUnit', 'location', 'harvestDate', 'image', 'imageUrl', 'isOrganic', 'status'
   ];
-  
+
   const updateFields = {};
   for (const field of allowedUpdates) {
     if (updateData[field] !== undefined) {
@@ -215,6 +206,21 @@ export const updateCrop = asyncHandler(async (req, res) => {
         updateFields[field] = updateData[field];
       }
     }
+  }
+
+  // If updating title, also update name for compatibility
+  if (updateFields.title && !updateFields.name) {
+    updateFields.name = updateFields.title;
+  }
+  if (updateFields.name && !updateFields.title) {
+    updateFields.title = updateFields.name;
+  }
+  // If updating imageUrl, also update image
+  if (updateFields.imageUrl && !updateFields.image) {
+    updateFields.image = updateFields.imageUrl;
+  }
+  if (updateFields.image && !updateFields.imageUrl) {
+    updateFields.imageUrl = updateFields.image;
   }
   
   updateFields.updatedAt = new Date();

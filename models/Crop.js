@@ -20,9 +20,10 @@ export const units = ['kg', 'gram', 'ton', 'piece', 'dozen', 'liter'];
 export const validateCropData = (data) => {
   const errors = [];
 
-  if (!data.title || data.title.trim().length < 3) {
-    errors.push('Title must be at least 3 characters');
+  if (!data.name || data.name.trim().length < 3) {
+    errors.push('Name must be at least 3 characters');
   }
+
 
   if (!data.description || data.description.trim().length < 10) {
     errors.push('Description must be at least 10 characters');
@@ -42,6 +43,10 @@ export const validateCropData = (data) => {
 
   if (!data.location || data.location.trim().length < 2) {
     errors.push('Location is required');
+  }
+
+  if (!data.image || data.image.trim().length < 5) {
+    errors.push('Image URL is required');
   }
 
   return {
