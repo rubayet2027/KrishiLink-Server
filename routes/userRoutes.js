@@ -16,6 +16,11 @@ const router = express.Router();
  * Base path: /api/users
  */
 
+
+// Public: Register or save user
+import { createUser } from '../controllers/userController.js';
+router.post('/', createUser);
+
 // Protected routes
 router.get('/profile', verifyToken, getProfile);
 router.put('/profile', verifyToken, updateProfile);

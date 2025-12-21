@@ -1,3 +1,22 @@
+// Create or register a new user
+import { createUserDocument } from '../models/User.js';
+export const createUser = asyncHandler(async (req, res) => {
+  await connectDB();
+  const usersCollection = getCollection('users');
+  const { uid, email, name, photoURL, phone } = req.body;
+  if (!uid || !email) {
+    throw new ApiError(400, 'uid and email are required', 'VALIDATION_ERROR');
+  }
+  // Check if user already exists
+  let user = await usersCollection.findOne({ uid });
+  if (user) {
+    return res.status(200).json({ success: true, message: 'User already exists', data: user });
+  }
+  // Create user document
+  const userDoc = createUserDocument({ uid, email, name, photoURL, phone });
+  await usersCollection.insertOne(userDoc);
+  res.status(201).json({ success: true, message: 'User created', data: userDoc });
+});
 import { connectDB, getCollection } from '../config/database.js';
 import { validateUserData } from '../models/User.js';
 import { ApiError, asyncHandler } from '../middleware/errorHandler.js';
