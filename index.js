@@ -13,14 +13,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+
 const corsOptions = {
   origin: [
     process.env.CLIENT_URL || 'http://localhost:5173',
     'http://localhost:5173',
     'http://localhost:5174',
     'https://krishilink-56c13.web.app',
-    'https://krishilink-56c13.firebaseapp.com', 
+    'https://krishilink-56c13.firebaseapp.com',
     'https://krishilink.vercel.app',
+    'https://krishi-link-client.vercel.app',
+    'https://krishi-link-server-self.vercel.app',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
