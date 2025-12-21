@@ -155,11 +155,9 @@ export const createCrop = asyncHandler(async (req, res) => {
     updatedAt: new Date(),
   };
 
-  // For compatibility, set image and imageUrl to first image if available
-  if (imagesArr.length > 0) {
-    newCrop.image = imagesArr[0];
-    newCrop.imageUrl = imagesArr[0];
-  }
+  // Remove image and imageUrl fields if present
+  delete newCrop.image;
+  delete newCrop.imageUrl;
 
   const result = await cropsCollection.insertOne(newCrop);
 
