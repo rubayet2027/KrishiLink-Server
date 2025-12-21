@@ -19,6 +19,7 @@ const corsOptions = {
     process.env.CLIENT_URL || 'http://localhost:5173',
     'http://localhost:5173',
     'http://localhost:5174',
+    'http://localhost:5175',
     'https://krishilink-56c13.web.app',
     'https://krishilink-56c13.firebaseapp.com',
     'https://krishilink.vercel.app',
