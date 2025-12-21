@@ -45,8 +45,13 @@ export const validateCropData = (data) => {
     errors.push('Location is required');
   }
 
-  if (!data.image || data.image.trim().length < 5) {
-    errors.push('Image URL is required');
+  // Require images array with at least one valid URL
+  if (Array.isArray(data.images)) {
+    if (data.images.length === 0 || typeof data.images[0] !== 'string' || data.images[0].trim().length < 5) {
+      errors.push('At least one valid image URL is required in images array');
+    }
+  } else {
+    errors.push('At least one valid image URL is required in images array');
   }
 
   return {

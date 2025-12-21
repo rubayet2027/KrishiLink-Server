@@ -120,26 +120,46 @@ export const createCrop = asyncHandler(async (req, res) => {
   const { user } = req;
   const cropData = req.body;
   
-  // Validate crop data before storing
+  // Debug: Log incoming cropData
+  console.log('Incoming cropData:', JSON.stringify(cropData, null, 2));
+  // Debug: Log incoming cropData and validation errors
+  console.log('Incoming cropData:', JSON.stringify(cropData, null, 2));
   const validation = validateCropData(cropData);
   if (!validation.isValid) {
+    console.error('Crop validation failed:', validation.errors);
     return res.status(400).json({
       success: false,
       message: validation.errors.join(', '),
-      errors: validation.errors
+      errors: validation.errors,
+      debug: cropData
     });
   }
 
   const cropsCollection = getCollection('crops');
   const usersCollection = getCollection('users');
 
-  // Ensure interests is always an array
-  const newCrop = {
+
+  // Always store images as an array
+  let imagesArr = [];
+  if (Array.isArray(cropData.images) && cropData.images.length > 0) {
+    imagesArr = cropData.images.filter(img => typeof img === 'string' && img.trim().length > 0);
+  } else if (typeof cropData.image === 'string' && cropData.image.trim().length > 0) {
+    imagesArr = [cropData.image];
+  }
+
+  let newCrop = {
     ...cropData,
+    images: imagesArr,
     interests: Array.isArray(cropData.interests) ? cropData.interests : [],
     createdAt: new Date(),
     updatedAt: new Date(),
   };
+
+  // For compatibility, set image and imageUrl to first image if available
+  if (imagesArr.length > 0) {
+    newCrop.image = imagesArr[0];
+    newCrop.imageUrl = imagesArr[0];
+  }
 
   const result = await cropsCollection.insertOne(newCrop);
 
